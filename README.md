@@ -30,6 +30,6 @@
 <img width="1200" height="411" alt="image" src="https://github.com/user-attachments/assets/a54744b7-5b62-4061-b5e6-ed1a1e75e677" />
 
 
-## 环境配置
+## 开发人员
 
 源文件中包含本程序所有代码，可以复制去vs中打开，C++版本位C++17，也可以下载文件夹，然后直接使用 vs 打开这个项目
