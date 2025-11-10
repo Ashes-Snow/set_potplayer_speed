@@ -33,3 +33,14 @@
 ## 开发人员
 
 源文件中包含本程序所有代码，可以复制去vs中打开，C++版本位C++17，也可以下载文件夹，然后直接使用 vs 打开这个项目
+
+在v1.1版本代码中，请从vs2019升级到vs2022  
+vs中，需要对项目进行如图设置：  
+<img width="1883" height="1068" alt="属性设置" src="https://github.com/user-attachments/assets/548afe4d-f180-482b-b43b-43e0a04635f2" />
+
+
+同时，由于彻底改为无控制台，所以无法直接进行调试，如果需要调试，请按照以下说明：
+关于输出和调试信息：  
+
+1. 在1.1中，我将std::cout 替换为 OutputDebugStringA，这样不会弹出控制台。可以用 Visual Studio 的输出窗口或 Sysinternals 的 DebugView 查看调试信息。
+2. 如果你仍想保留控制台用于调试，可以改回 /SUBSYSTEM:CONSOLE 或在需要时临时添加 AllocConsole()。
