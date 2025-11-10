@@ -1,12 +1,10 @@
-#include <iostream>
+#include <windows.h>
+#include <tlhelp32.h>
+#include <psapi.h>
 #include <thread>
 #include <atomic>
 #include <chrono>
 #include <string>
-#include <windows.h>
-#include <tlhelp32.h>
-#include <psapi.h>
-#include <conio.h>
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "psapi.lib")
@@ -14,8 +12,8 @@
 // PotPlayer按键配置
 const char speed_increase_key = 'c';       // 增加速度按键
 const char reset_speed_key = 'z';          // 重置速度按键
-const int toggle_speed_key = VK_RIGHT;     // 切换速度按键
-const int fast_forward_key = VK_RIGHT;     // 快进按键
+const int toggle_speed_key = VK_RIGHT;     // 切换速度按键（这里用右方向键）
+const int fast_forward_key = VK_RIGHT;     // 快进按键（未直接用）
 const int rewind_key = VK_LEFT;            // 回退按键
 
 // 线程安全的状态变量
@@ -91,7 +89,7 @@ bool is_potplayer_running() {
     return false;
 }
 
-// 发送按键事件
+// 发送按键事件（注意：使用VkKeyScanA得到虚拟键，但对某些键组合可能不完全可靠）
 void send_key(char key) {
     INPUT input = { 0 };
     input.type = INPUT_KEYBOARD;
@@ -103,8 +101,8 @@ void send_key(char key) {
     SendInput(1, &input, sizeof(INPUT));
 }
 
-// 发送组合键事件
-void send_hotkey(char modifier, int key) {
+// 发送组合键事件（修饰键为虚拟键码）
+void send_hotkey(int modifier, int key) {
     INPUT inputs[4] = { 0 };
 
     // 按下修饰键
@@ -134,7 +132,7 @@ void send_hotkey(char modifier, int key) {
 void set_three_times_speed() {
     if (is_potplayer_focused()) {
         send_key(speed_increase_key);
-        std::cout << "已设置为3倍速" << std::endl;
+        OutputDebugStringA("已设置为3倍速\n");
         is_speed_applied = true;
     }
 }
@@ -143,7 +141,7 @@ void set_three_times_speed() {
 void reset_to_normal_speed() {
     if (is_potplayer_focused()) {
         send_key(reset_speed_key);
-        std::cout << "已恢复正常速度" << std::endl;
+        OutputDebugStringA("已恢复正常速度\n");
         is_speed_applied = false;
     }
 }
@@ -152,7 +150,7 @@ void reset_to_normal_speed() {
 void fast_forward_5_seconds() {
     if (is_potplayer_focused()) {
         send_hotkey(VK_CONTROL, VK_RIGHT);
-        std::cout << "已快进5秒" << std::endl;
+        OutputDebugStringA("已快进5秒\n");
     }
 }
 
@@ -160,7 +158,7 @@ void fast_forward_5_seconds() {
 void rewind_5_seconds() {
     if (is_potplayer_focused()) {
         send_hotkey(VK_CONTROL, VK_LEFT);
-        std::cout << "已回退5秒" << std::endl;
+        OutputDebugStringA("已回退5秒\n");
     }
 }
 
@@ -244,15 +242,10 @@ bool check_exit_hotkey() {
         (GetAsyncKeyState('T') & 0x8000);
 }
 
-int main() {
-    HWND hwnd = GetConsoleWindow();  // 获取当前控制台窗口句柄
-    ShowWindow(hwnd, SW_HIDE);       // 隐藏控制台窗口
-
-    std::cout << "程序已启动：" << std::endl;
-    std::cout << "  - 按住右方向键0.3秒后切换到3倍速，松开恢复1倍速" << std::endl;
-    std::cout << "  - 快速按下并松开右方向键快进5秒" << std::endl;
-    std::cout << "  - 按住左方向键持续回退5秒，松开关闭" << std::endl;
-    std::cout << "按Ctrl+Alt+T立即终止程序" << std::endl;
+// WinMain：程序入口（Windows 子系统，无控制台窗口）
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
+    // 如果你需要调试输出，可以用 OutputDebugStringA 查看日志（在调试器或 DebugView 中可见）
+    OutputDebugStringA("PotPlayer 控制程序（后台）已启动\n");
 
     // 启动按键处理线程
     std::thread monitor_thread(handle_key_states);
@@ -260,7 +253,7 @@ int main() {
     // 主循环检测退出热键
     while (program_running) {
         if (check_exit_hotkey()) {
-            std::cout << "\n强制终止程序..." << std::endl;
+            OutputDebugStringA("检测到退出热键，正在终止程序...\n");
             program_running = false;
             break;
         }
@@ -272,6 +265,6 @@ int main() {
         monitor_thread.join();
     }
 
+    OutputDebugStringA("PotPlayer 控制程序已退出\n");
     return 0;
 }
-
